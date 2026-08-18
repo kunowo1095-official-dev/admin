@@ -1,5 +1,4 @@
-// KCHAT Admin - Firebase configuration
-// Firebase Web config for KCHAT Admin.
+// KCHAT Admin - Firebase configuration (embedded; no editing required)
 export const firebaseConfig = {
   apiKey: "AIzaSyCYBVJklokpf25zHif9PhV_ZT2N1AFNbUo",
   authDomain: "chat-place-kunowo.firebaseapp.com",
@@ -11,6 +10,6 @@ export const firebaseConfig = {
   measurementId: "G-EDPQXFRDLE"
 };
 
-// Internal login mapping; never shown on the login screen.
+// Internal mapping; never rendered on the login screen.
 export const ADMIN_USERNAME = "KUNOWO10958088";
 export const ADMIN_AUTH_EMAIL = "kunowo10958088@kchatadmin.local";
