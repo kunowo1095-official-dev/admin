@@ -1,10 +1,12 @@
 # KCHAT Admin — GitHub Pages
 
-Versi ini sudah memakai konfigurasi Firebase yang kamu kirim dan siap di-upload ke GitHub Pages.
+Firebase config sudah tertanam. Tidak perlu mengedit `firebase-config.js`.
 
-## Satu hal yang tetap wajib dilakukan
-Buat akun admin di Firebase Authentication (Email/Password) dengan email internal panel dan password admin yang kamu tetapkan sebelumnya. Email internal tidak ditampilkan di panel login.
+### Satu kali setup di Firebase
+1. Firebase Console → Authentication → Sign-in method → Email/Password → Enable.
+2. Authentication → Users → Add user.
+3. Buat user dengan email internal panel yang sudah tertanam di config dan password admin yang kamu pilih.
 
-Di Firebase Console: Authentication → Sign-in method → Email/Password → Enable → Users → Add user.
+Setelah user Firebase dibuat, upload folder ini ke GitHub Pages. Login di panel hanya meminta username/password admin; email internal tidak ditampilkan.
 
-Realtime Database Rules harus membatasi akses hanya UID admin.
+> Jangan menaruh Firebase Admin SDK/private key di frontend/GitHub Pages. Gunakan Firebase Security Rules untuk membatasi `users` dan `adminLogs` ke UID admin.
