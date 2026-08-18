@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070b"><title>KCHAT Admin Panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="login" class="screen">
+  <div class="login-card">
+    <div class="brand"><span class="dot"></span>KCHAT <b>ADMIN</b></div>
+    <p class="muted">Secure administration panel</p>
+    <div class="field"><label>Username</label><input id="loginUser" autocomplete="username" placeholder="KUNOWO10958088"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button id="loginBtn" class="btn primary">Masuk Panel</button>
+    <div id="loginMsg" class="msg"></div>
+    <p class="tiny">Login ini menggunakan Firebase Authentication.</p>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><span class="dot"></span>KCHAT <b>ADMIN</b></div>
+    <nav>
+      <button data-page="dashboard" class="nav active">Dashboard</button>
+      <button data-page="register" class="nav">Register Akun</button>
+      <button data-page="premium" class="nav">Premium</button>
+    </nav>
+    <button id="logoutBtn" class="nav logout">Keluar</button>
+  </aside>
+  <main class="main">
+    <header><div><span class="eyebrow">ADMIN CONTROL</span><h1 id="pageTitle">Dashboard</h1></div><div class="userpill" id="who"></div></header>
+
+    <section id="dashboard" class="page">
+      <div class="cards"><div class="stat"><span>Total Akun</span><strong id="totalUsers">0</strong></div><div class="stat neon"><span>Premium Aktif</span><strong id="totalPremium">0</strong></div></div>
+      <div class="card"><h2>Panel GitHub Pages</h2><p>Frontend berjalan tanpa Flask/server custom. Firebase menjadi penyimpanan + autentikasi.</p><div class="warn">Jangan taruh Firebase Admin SDK/private key di GitHub Pages.</div></div>
+    </section>
+
+    <section id="register" class="page hidden">
+      <div class="card"><div class="section"><div><span class="eyebrow">REGISTER</span><h2>Buat Akun Baru</h2></div><span class="chip">ADMIN ONLY</span></div>
+        <div class="grid2"><div class="field"><label>Username</label><input id="regUsername"></div><div class="field"><label>Display Name</label><input id="regDisplay"></div></div>
+        <div class="grid2"><div class="field"><label>Password</label><input id="regPassword" type="password"></div><div class="field"><label>Node ID</label><input id="regNode"></div></div>
+        <button id="registerBtn" class="btn primary">Register Akun</button><div id="registerMsg" class="msg"></div>
+      </div>
+    </section>
+
+    <section id="premium" class="page hidden">
+      <div class="gridPremium">
+        <div class="card">
+          <div class="section"><div><span class="eyebrow">PREMIUM</span><h2>Atur Premium</h2></div><span class="chip neon">ACTIVE</span></div>
+          <div class="field"><label>Username / Node ID</label><input id="premTarget" placeholder="contoh: kunowo01"></div>
+          <div class="calendarHead"><button id="prevMonth">‹</button><button id="monthLabel" class="monthLabel"></button><button id="nextMonth">›</button></div>
+          <div class="week"><span>M</span><span>S</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span></div>
+          <div id="calendar" class="calendar"></div>
+          <div class="grid2"><div class="field"><label>Tanggal</label><input id="premDate" readonly></div><div class="field"><label>Jam Expired</label><input id="premTime" type="time" value="23:59"></div></div>
+          <button id="premiumBtn" class="btn primary">Aktifkan Premium ★</button><div id="premiumMsg" class="msg"></div>
+        </div>
+        <div class="card"><div class="section"><div><span class="eyebrow">PREMIUM LIST</span><h2>Akun Premium</h2></div><button id="refreshPremium" class="btn ghost">Refresh</button></div><div id="premiumList"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+<script type="module" src="app.js"></script>
+</body></html>
