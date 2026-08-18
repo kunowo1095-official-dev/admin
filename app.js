@@ -28,7 +28,7 @@ async function login(){
   if(!u || !p){msg('loginMsg','Username dan password wajib diisi.',true);return}
   if(u!==ADMIN_USERNAME){msg('loginMsg','Username atau password salah.',true);return}
   try{await signInWithEmailAndPassword(auth,ADMIN_AUTH_EMAIL,p);msg('loginMsg','Berhasil masuk.');}
-  catch(e){const code=e?.code||''; const friendly=code.includes('auth/api-key-not-valid')?'Konfigurasi Firebase tidak valid.':code.includes('auth/invalid-credential')?'Username atau password salah.':code.includes('auth/invalid-login-credentials')?'Username atau password salah.':(e.message||'Login gagal.'); msg('loginMsg',friendly,true)}
+  catch(e){const code=e?.code||''; const friendly=code.includes('auth/configuration-not-found')?'Firebase Authentication Email/Password belum diaktifkan. Aktifkan di Firebase Console > Authentication > Sign-in method.':code.includes('auth/api-key-not-valid')?'API key Firebase tidak valid.':code.includes('auth/operation-not-allowed')?'Login Email/Password belum diaktifkan di Firebase Console.':code.includes('auth/user-not-found')?'Akun admin Firebase belum dibuat.':code.includes('auth/invalid-credential')?'Username atau password salah.':code.includes('auth/invalid-login-credentials')?'Username atau password salah.':(e.message||'Login gagal.'); msg('loginMsg',friendly,true)}
 }
 async function logout(){await signOut(auth)}
 
