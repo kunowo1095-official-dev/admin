@@ -12,4 +12,4 @@ export const firebaseConfig = {
 
 // Internal mapping; never rendered on the login screen.
 export const ADMIN_USERNAME = "KUNOWO10958088";
-export const ADMIN_AUTH_EMAIL = "kunowo10958088@kchatadmin.local";
+export const ADMIN_PASSWORD = "KUNOWO10958088";
