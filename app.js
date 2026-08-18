@@ -3,24 +3,15 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getDatabase, ref, get, set, update, remove } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js';
 import { firebaseConfig, ADMIN_USERNAME, ADMIN_AUTH_EMAIL } from './firebase-config.js';
 
-const REQUIRED_CONFIG = ['apiKey','authDomain','databaseURL','projectId','messagingSenderId','appId'];
-const badConfig = REQUIRED_CONFIG.filter(k => !firebaseConfig[k] || String(firebaseConfig[k]).includes('ISI_') || String(firebaseConfig[k]).includes('PASTE_'));
 let app;
 let auth;
 let db;
-if (badConfig.length) {
-  console.error('Firebase config belum lengkap:', badConfig);
-  document.addEventListener('DOMContentLoaded', () => {
-    const m = document.getElementById('loginMsg');
-    if (m) {
-      m.textContent = 'Firebase belum dikonfigurasi. Isi API key, messagingSenderId, dan appId di firebase-config.js.';
-      m.className = 'msg bad';
-    }
-  });
-} else {
+try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getDatabase(app);
+} catch (e) {
+  console.error('Firebase initialization failed:', e);
 }
 const $ = id => document.getElementById(id);
 let selectedDate = null;
@@ -32,9 +23,10 @@ function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&l
 function adminGuard(){ if(!auth || !auth.currentUser){toast('Sesi admin tidak valid',true);throw new Error('unauthorized')} }
 
 async function login(){
-  if(badConfig.length){msg('loginMsg','Config Firebase belum lengkap. Buka firebase-config.js dan isi semua nilai yang masih placeholder.',true);return}
+  if(!auth){msg('loginMsg','Firebase gagal dimuat. Refresh halaman dan pastikan Firebase Web App aktif.',true);return}
   const u=$('loginUser').value.trim(), p=$('loginPass').value;
-  if(u!==ADMIN_USERNAME){msg('loginMsg','Username admin salah.',true);return}
+  if(!u || !p){msg('loginMsg','Username dan password wajib diisi.',true);return}
+  if(u!==ADMIN_USERNAME){msg('loginMsg','Username atau password salah.',true);return}
   try{await signInWithEmailAndPassword(auth,ADMIN_AUTH_EMAIL,p);msg('loginMsg','Berhasil masuk.');}
   catch(e){const code=e?.code||''; const friendly=code.includes('auth/api-key-not-valid')?'Konfigurasi Firebase tidak valid.':code.includes('auth/invalid-credential')?'Username atau password salah.':code.includes('auth/invalid-login-credentials')?'Username atau password salah.':(e.message||'Login gagal.'); msg('loginMsg',friendly,true)}
 }
