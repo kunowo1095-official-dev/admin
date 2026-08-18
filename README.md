@@ -1,23 +1,14 @@
-# KCHAT Admin — GitHub Pages
+# KCHAT Admin
 
-Firebase configuration is already embedded. No code/config editing is required.
+Versi ini **tidak memakai Firebase Authentication**. Login admin dilakukan lokal di browser menggunakan username/password yang ada di `firebase-config.js`. Firebase hanya dipakai sebagai Realtime Database.
 
-## One-time Firebase setup
+## Login default
+- Username: `KUNOWO10958088`
+- Password: `KUNOWO10958088`
 
-This panel uses Firebase Authentication with Email/Password, so the provider must be enabled in the Firebase project. Firebase documents that Email/Password must be enabled before signing in with `signInWithEmailAndPassword`.
+Ganti `ADMIN_PASSWORD` sebelum dipublikasikan.
 
-1. Firebase Console → **Authentication** → **Sign-in method**.
-2. Enable **Email/Password** and save.
-3. Open **Authentication → Users**.
-4. Create the single admin authentication user used internally by this panel:
-   - Email: `kunowo10958088@kchatadmin.local`
-   - Password: use the admin password configured for this panel.
-5. Upload this folder to GitHub Pages.
+## Catatan keamanan
+Karena tidak ada Firebase Auth, kredensial admin pada GitHub Pages secara teknis bisa ditemukan dari source JavaScript. Ini cocok untuk panel pribadi/testing, bukan panel publik yang membutuhkan keamanan kuat.
 
-The login page only displays Username + Password. The internal email is not displayed.
-
-## Important security note
-
-GitHub Pages is static hosting. Never put a Firebase Admin SDK private key, service-account JSON, or database master credential in this repository.
-
-Protect the Realtime Database with Firebase Security Rules so only the authenticated admin UID can modify `users` and `adminLogs`.
+Selain itu, Firebase Realtime Database rules harus mengizinkan operasi yang dipakai panel; tanpa autentikasi, jangan membuka database secara luas untuk aplikasi produksi.
