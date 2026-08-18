@@ -1,19 +1,29 @@
-# KCHAT Admin — GitHub Pages Edition
+# KCHAT Admin — GitHub Pages Edition (Firebase)
 
-Frontend static-only. Tidak membutuhkan Flask/Node/backend custom.
+Panel ini **sepenuhnya statis** dan cocok untuk GitHub Pages. Tidak membutuhkan Flask, Node, VPS, atau server custom.
 
-## 1. Firebase Web App
-1. Buka Firebase Console → Project `chat-place-kunowo`.
-2. Tambahkan Web App dan salin config ke `firebase-config.js`.
-3. Aktifkan Authentication → Sign-in method → Email/Password.
-4. Buat 1 user admin dengan:
+## Kenapa sebelumnya muncul `auth/api-key-not-valid`?
+Karena file `firebase-config.js` versi sebelumnya masih memakai placeholder seperti `PASTE_WEB_API_KEY`.
+
+## Setup wajib satu kali
+1. Buka Firebase Console → project `chat-place-kunowo`.
+2. Project settings → General → Your apps → pilih/daftarkan **Web app**.
+3. Salin **Firebase SDK config**.
+4. Isi `firebase-config.js`:
+   - `apiKey`
+   - `authDomain`
+   - `databaseURL`
+   - `projectId`
+   - `storageBucket`
+   - `messagingSenderId`
+   - `appId`
+5. Firebase Authentication → Sign-in method → aktifkan **Email/Password**.
+6. Buat user admin Authentication:
    - Email: `kunowo10958088@kchatadmin.local`
    - Password: `KNW10958088`
-5. Catat UID user admin tersebut.
+7. Realtime Database Rules: izinkan hanya UID admin.
 
-## 2. Realtime Database Rules
-Gunakan rules yang hanya mengizinkan UID admin membaca/menulis panel. Ganti `ADMIN_UID` dengan UID tadi.
-
+Contoh rules:
 ```json
 {
   "rules": {
@@ -29,20 +39,11 @@ Gunakan rules yang hanya mengizinkan UID admin membaca/menulis panel. Ganti `ADM
 }
 ```
 
-Jangan memakai rule `.read: true` / `.write: true`.
+## GitHub Pages
+Upload seluruh isi folder ini ke repository, lalu aktifkan GitHub Pages dari branch utama.
 
-## 3. GitHub Pages
-Upload semua file ke repo GitHub, lalu Settings → Pages → Deploy from branch.
-
-File yang wajib ada:
-- `index.html`
-- `style.css`
-- `app.js`
-- `firebase-config.js`
-
-## 4. Catatan keamanan
-- GitHub Pages bersifat publik; HTML/CSS/JS frontend selalu dapat dilihat.
-- Firebase Web API key bukan secret.
-- Jangan pernah memasukkan Firebase Admin SDK private key, database secret, atau service-account JSON ke repo.
-- Username/password admin tidak ditaruh sebagai password hardcoded di JavaScript.
-- Password akun pengguna pada schema `users/{username}` masih mengikuti schema aplikasi lama. Untuk keamanan lebih baik, migrasikan login pengguna ke Firebase Authentication.
+## Keamanan
+- Firebase Web API key boleh terlihat di frontend; itu bukan secret credential.
+- Jangan pernah menaruh Service Account JSON, private key, atau database secret di repository.
+- Password admin digunakan oleh Firebase Authentication, bukan disimpan sebagai password hardcoded di JavaScript.
+- Pastikan Firebase Rules membatasi database berdasarkan `auth.uid` admin.
