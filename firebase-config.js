@@ -7,8 +7,8 @@ export const firebaseConfig = {
   databaseURL: "https://chat-place-kunowo-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "chat-place-kunowo",
   storageBucket: "chat-place-kunowo.firebasestorage.app",
-  messagingSenderId: "ISI_MESSAGING_SENDER_ID",
-  appId: "ISI_APP_ID"
+  messagingSenderId: "750603199864",
+  appId: "1:750603199864:web:2e502b9a587f1b9241d48d"
 };
 
 export const ADMIN_USERNAME = "KUNOWO10958088";
