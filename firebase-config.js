@@ -1,5 +1,5 @@
 // KCHAT Admin - Firebase configuration
-// This file is ready for GitHub Pages.
+// Firebase Web config for KCHAT Admin.
 export const firebaseConfig = {
   apiKey: "AIzaSyCYBVJklokpf25zHif9PhV_ZT2N1AFNbUo",
   authDomain: "chat-place-kunowo.firebaseapp.com",
