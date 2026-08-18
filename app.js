@@ -36,7 +36,7 @@ async function login(){
   const u=$('loginUser').value.trim(), p=$('loginPass').value;
   if(u!==ADMIN_USERNAME){msg('loginMsg','Username admin salah.',true);return}
   try{await signInWithEmailAndPassword(auth,ADMIN_AUTH_EMAIL,p);msg('loginMsg','Berhasil masuk.');}
-  catch(e){msg('loginMsg',e.message||'Login gagal.',true)}
+  catch(e){const code=e?.code||''; const friendly=code.includes('auth/api-key-not-valid')?'Konfigurasi Firebase tidak valid.':code.includes('auth/invalid-credential')?'Username atau password salah.':code.includes('auth/invalid-login-credentials')?'Username atau password salah.':(e.message||'Login gagal.'); msg('loginMsg',friendly,true)}
 }
 async function logout(){await signOut(auth)}
 
