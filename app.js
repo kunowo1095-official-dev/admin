@@ -3,9 +3,25 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getDatabase, ref, get, set, update, remove } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js';
 import { firebaseConfig, ADMIN_USERNAME, ADMIN_AUTH_EMAIL } from './firebase-config.js';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+const REQUIRED_CONFIG = ['apiKey','authDomain','databaseURL','projectId','messagingSenderId','appId'];
+const badConfig = REQUIRED_CONFIG.filter(k => !firebaseConfig[k] || String(firebaseConfig[k]).includes('ISI_') || String(firebaseConfig[k]).includes('PASTE_'));
+let app;
+let auth;
+let db;
+if (badConfig.length) {
+  console.error('Firebase config belum lengkap:', badConfig);
+  document.addEventListener('DOMContentLoaded', () => {
+    const m = document.getElementById('loginMsg');
+    if (m) {
+      m.textContent = 'Firebase belum dikonfigurasi. Isi API key, messagingSenderId, dan appId di firebase-config.js.';
+      m.className = 'msg bad';
+    }
+  });
+} else {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+}
 const $ = id => document.getElementById(id);
 let selectedDate = null;
 let calCursor = new Date();
@@ -13,9 +29,10 @@ let calCursor = new Date();
 function toast(msg,bad=false){const t=$('toast');t.textContent=msg;t.className=bad?'bad':'show';clearTimeout(window.__t);window.__t=setTimeout(()=>{t.className='';},2800)}
 function msg(id,text,bad=false){$(id).textContent=text;$(id).className='msg '+(bad?'bad':'ok')}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function adminGuard(){ if(!auth.currentUser){toast('Sesi admin tidak valid',true);throw new Error('unauthorized')} }
+function adminGuard(){ if(!auth || !auth.currentUser){toast('Sesi admin tidak valid',true);throw new Error('unauthorized')} }
 
 async function login(){
+  if(badConfig.length){msg('loginMsg','Config Firebase belum lengkap. Buka firebase-config.js dan isi semua nilai yang masih placeholder.',true);return}
   const u=$('loginUser').value.trim(), p=$('loginPass').value;
   if(u!==ADMIN_USERNAME){msg('loginMsg','Username admin salah.',true);return}
   try{await signInWithEmailAndPassword(auth,ADMIN_AUTH_EMAIL,p);msg('loginMsg','Berhasil masuk.');}
@@ -56,4 +73,4 @@ function renderCalendar(){
 $('prevMonth').onclick=()=>{calCursor.setMonth(calCursor.getMonth()-1);renderCalendar()};$('nextMonth').onclick=()=>{calCursor.setMonth(calCursor.getMonth()+1);renderCalendar()};
 $('loginBtn').onclick=login;$('loginPass').onkeydown=e=>{if(e.key==='Enter')login()};$('logoutBtn').onclick=logout;$('registerBtn').onclick=registerUser;$('premiumBtn').onclick=setPremium;$('refreshPremium').onclick=loadPremium;document.querySelectorAll('.nav[data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));renderCalendar();
 
-onAuthStateChanged(auth,user=>{if(user){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=ADMIN_USERNAME;showPage('dashboard');}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}});
+if (auth) onAuthStateChanged(auth,user=>{if(user){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=ADMIN_USERNAME;showPage('dashboard');}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}});
