@@ -1,15 +1,14 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import { getDatabase, ref, get, set, update, remove } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js';
-import { firebaseConfig, ADMIN_USERNAME, ADMIN_AUTH_EMAIL } from './firebase-config.js';
+import { firebaseConfig, ADMIN_USERNAME, ADMIN_PASSWORD } from './firebase-config.js';
 
 let app;
-let auth;
 let db;
+let adminLoggedIn = sessionStorage.getItem('kchat_admin_logged_in') === '1';
 try {
   app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
   db = getDatabase(app);
+  console.info('[Firebase] Project:', firebaseConfig.projectId);
 } catch (e) {
   console.error('Firebase initialization failed:', e);
 }
@@ -20,17 +19,24 @@ let calCursor = new Date();
 function toast(msg,bad=false){const t=$('toast');t.textContent=msg;t.className=bad?'bad':'show';clearTimeout(window.__t);window.__t=setTimeout(()=>{t.className='';},2800)}
 function msg(id,text,bad=false){$(id).textContent=text;$(id).className='msg '+(bad?'bad':'ok')}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function adminGuard(){ if(!auth || !auth.currentUser){toast('Sesi admin tidak valid',true);throw new Error('unauthorized')} }
+function adminGuard(){ if(!adminLoggedIn){toast('Sesi admin tidak valid',true);showLogin();throw new Error('unauthorized')} }
+function showLogin(){$('login').classList.remove('hidden');$('app').classList.add('hidden')}
+function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=ADMIN_USERNAME;showPage('dashboard')}
 
 async function login(){
-  if(!auth){msg('loginMsg','Firebase gagal dimuat. Refresh halaman dan pastikan Firebase Web App aktif.',true);return}
   const u=$('loginUser').value.trim(), p=$('loginPass').value;
   if(!u || !p){msg('loginMsg','Username dan password wajib diisi.',true);return}
-  if(u!==ADMIN_USERNAME){msg('loginMsg','Username atau password salah.',true);return}
-  try{await signInWithEmailAndPassword(auth,ADMIN_AUTH_EMAIL,p);msg('loginMsg','Berhasil masuk.');}
-  catch(e){const code=e?.code||''; const friendly=code.includes('auth/configuration-not-found')?'Firebase Authentication Email/Password belum diaktifkan. Aktifkan di Firebase Console > Authentication > Sign-in method.':code.includes('auth/api-key-not-valid')?'API key Firebase tidak valid.':code.includes('auth/operation-not-allowed')?'Login Email/Password belum diaktifkan di Firebase Console.':code.includes('auth/user-not-found')?'Akun admin Firebase belum dibuat.':code.includes('auth/invalid-credential')?'Username atau password salah.':code.includes('auth/invalid-login-credentials')?'Username atau password salah.':(e.message||'Login gagal.'); msg('loginMsg',friendly,true)}
+  if(u!==ADMIN_USERNAME || p!==ADMIN_PASSWORD){msg('loginMsg','Username atau password salah.',true);return}
+  adminLoggedIn=true;
+  sessionStorage.setItem('kchat_admin_logged_in','1');
+  msg('loginMsg','Berhasil masuk.');
+  showApp();
 }
-async function logout(){await signOut(auth)}
+function logout(){
+  adminLoggedIn=false;
+  sessionStorage.removeItem('kchat_admin_logged_in');
+  showLogin();
+}
 
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('.nav[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('pageTitle').textContent={dashboard:'Dashboard',register:'Register Akun',premium:'Premium'}[id]||'Dashboard';if(id==='dashboard')loadStats();if(id==='premium')loadPremium()}
 
@@ -58,11 +64,10 @@ async function setPremium(){
 function formatDate(ms){return new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ms))}
 async function loadPremium(){try{const users=await usersData(),now=Date.now(),items=[];for(const [uname,u] of Object.entries(users)){if(!u?.premium)continue;const exp=Number(u.premiumExpiresAt)||0;if(exp===0||exp>now)items.push({username:uname,displayName:u.displayName||uname,nodeId:u.userWajib||'',expiresAt:exp,lifetime:exp===0})}items.sort((a,b)=>a.lifetime?-1:b.lifetime?1:a.expiresAt-b.expiresAt);const wrap=$('premiumList');if(!items.length){wrap.innerHTML='<div class="empty">Belum ada premium aktif.</div>';return}wrap.innerHTML=items.map(x=>`<div class="pRow"><div class="avatar">${esc((x.displayName||x.username)[0].toUpperCase())}</div><div class="pMain"><b>@${esc(x.username)}</b><span>${esc(x.displayName)} · ${esc(x.nodeId||'No Node ID')}</span><small>${x.lifetime?'Lifetime':'Expired: '+esc(formatDate(x.expiresAt))}</small></div><button class="danger" data-user="${esc(x.username)}">Hapus</button></div>`).join('');wrap.querySelectorAll('.danger').forEach(b=>b.onclick=()=>deletePremium(b.dataset.user));}catch(e){toast(e.message,true)}}
 async function deletePremium(username){if(!confirm(`Hapus permanen akun @${username}?`))return;try{const [uname,u]=await findUser(username);if(!u||!u.premium)throw Error('Akun premium tidak ditemukan.');await remove(ref(db,`users/${uname}`));await audit('DELETE_PREMIUM_USER',uname,'Permanently deleted premium account from GitHub Pages admin panel');toast('Akun dihapus permanen');loadPremium();loadStats()}catch(e){toast(e.message,true)}}
-async function audit(action,target,detail){const id=`log_${Date.now()}`;await set(ref(db,`adminLogs/${id}`),{action,operator:`web:${auth.currentUser?.uid||'unknown'}`,target,detail,timestamp:Date.now()})}
+async function audit(action,target,detail){const id=`log_${Date.now()}`;await set(ref(db,`adminLogs/${id}`),{action,operator:`web:${ADMIN_USERNAME}`,target,detail,timestamp:Date.now()})}
 
 function renderCalendar(){
  const y=calCursor.getFullYear(),m=calCursor.getMonth();$('monthLabel').textContent=new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(calCursor);const grid=$('calendar');grid.innerHTML='';const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();for(let i=0;i<first;i++){const e=document.createElement('span');e.className='day blank';grid.appendChild(e)}for(let d=1;d<=days;d++){const b=document.createElement('button');b.className='day';b.textContent=d;const dt=new Date(y,m,d);const today=new Date();if(dt.toDateString()===today.toDateString())b.classList.add('today');if(selectedDate&&dt.toDateString()===selectedDate.toDateString())b.classList.add('selected');b.onclick=()=>{selectedDate=dt;$('premDate').value=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;renderCalendar()};grid.appendChild(b)}}
 $('prevMonth').onclick=()=>{calCursor.setMonth(calCursor.getMonth()-1);renderCalendar()};$('nextMonth').onclick=()=>{calCursor.setMonth(calCursor.getMonth()+1);renderCalendar()};
 $('loginBtn').onclick=login;$('loginPass').onkeydown=e=>{if(e.key==='Enter')login()};$('logoutBtn').onclick=logout;$('registerBtn').onclick=registerUser;$('premiumBtn').onclick=setPremium;$('refreshPremium').onclick=loadPremium;document.querySelectorAll('.nav[data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));renderCalendar();
-
-if (auth) onAuthStateChanged(auth,user=>{if(user){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=ADMIN_USERNAME;showPage('dashboard');}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}});
+if(adminLoggedIn){showApp();}else{showLogin();}
